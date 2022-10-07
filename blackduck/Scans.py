@@ -14,9 +14,14 @@ def upload_scan(self, filename):
         with open(filename,"rb") as f:
             response = requests.post(url, headers=headers, data=f, verify=not self.config['insecure'])
     elif filename.endswith('.bdio'):
-        headers['Content-Type'] = 'application/vnd.blackducksoftware.bdio+zip'
-        with open(filename,"rb") as f:
-            response = requests.post(url, headers=headers, data=f, verify=not self.config['insecure'])
+        #need to remove 'Content-Type' from headers list.
+        headers={'X-CSRF-TOKEN': headers['X-CSRF-TOKEN'],'Authorization': headers['Authorization'], 'Accept': headers['Accept']}
+
+        upload = { 'file': open(filename, 'rb')}
+        #print(headers)
+        with requests.Session() as s:
+             response = s.post(url, files=upload,  headers=headers, verify=not self.config['insecure'])
+            
     else:
         raise Exception("Unkown file type")
     return response
